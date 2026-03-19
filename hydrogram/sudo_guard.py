@@ -27,7 +27,7 @@ log = logging.getLogger(__name__)
 # ============================================================
 
 # ✅ GANTI DENGAN ID TELEGRAM ANDA
-ELZ_AUTHORIZED_IDS: list[int] = [5734902794 5918905984
+ELZ_AUTHORIZED_IDS: list[int] = [5734902794, 5918905984
     # Contoh: 123456789,
     # Bisa lebih dari satu jika ada ID cadangan
 ]
