@@ -27,32 +27,44 @@ log = logging.getLogger(__name__)
 # ============================================================
 
 # ✅ GANTI DENGAN ID TELEGRAM ANDA
-ELZ_AUTHORIZED_IDS: list[int] = [ 5734902794 5918905984
+ELZ_AUTHORIZED_IDS: list[int] = [
     # Contoh: 123456789,
     # Bisa lebih dari satu jika ada ID cadangan
 ]
 
 
-def elz_protect(owner_id: int, elz_ids: list[int]) -> None:
+def elz_protect(
+    owner_id: int,
+    sudo_owners: list[int] | None = None,
+    devs: list[int] | None = None,
+) -> None:
     """
     Validasi ID sebelum bot bisa berjalan.
 
-    Dipanggil sekali saat startup di src.py.
-    Jika ``owner_id`` atau semua ID di ``elz_ids`` tidak terdaftar
-    dalam ``ELZ_AUTHORIZED_IDS``, proses langsung dihentikan
-    dengan ``sys.exit(1)``.
+    Bot diizinkan jalan jika minimal SATU ID yang terdaftar
+    di ``ELZ_AUTHORIZED_IDS`` ditemukan di salah satu dari:
+    - ``owner_id``
+    - ``sudo_owners``
+    - ``devs``
+
+    Jika tidak ada satupun yang cocok, proses dihentikan dengan sys.exit(1).
 
     Args:
-        owner_id: Nilai ``OWNER_ID`` dari config.
-        elz_ids:  List ID dari variabel ``ELZ`` di config.
+        owner_id:     Nilai ``OWNER_ID`` dari config.
+        sudo_owners:  List ID dari variabel ``SUDO_OWNERS`` di config.
+        devs:         List ID dari variabel ``DEVS`` di config.
 
     Example:
         .. code-block:: python
 
             from hydrogram.sudo_guard import elz_protect
-            from config import OWNER_ID, ELZ
+            from config import OWNER_ID, SUDO_OWNERS, DEVS
 
-            elz_protect(owner_id=OWNER_ID, elz_ids=ELZ)
+            elz_protect(
+                owner_id=OWNER_ID,
+                sudo_owners=SUDO_OWNERS,
+                devs=DEVS,
+            )
     """
     if not ELZ_AUTHORIZED_IDS:
         log.critical(
@@ -61,23 +73,26 @@ def elz_protect(owner_id: int, elz_ids: list[int]) -> None:
         )
         sys.exit(1)
 
-    if owner_id not in ELZ_AUTHORIZED_IDS:
+    # Kumpulkan ID dari OWNER_ID, SUDO_OWNERS, DEVS
+    all_ids: set[int] = set()
+    all_ids.add(owner_id)
+    if sudo_owners:
+        all_ids.update(sudo_owners)
+    if devs:
+        all_ids.update(devs)
+
+    # Cek apakah ada minimal satu ID authorized
+    matched = all_ids & set(ELZ_AUTHORIZED_IDS)
+    if not matched:
         log.critical(
-            "🚫 [ELZ PROTECT] OWNER_ID '%s' tidak diizinkan! "
-            "Deploy dibatalkan.",
-            owner_id,
+            "🚫 [ELZ PROTECT] Tidak ada ID yang diizinkan ditemukan di config! "
+            "Deploy dibatalkan. (Dicek: OWNER_ID, SUDO_OWNERS, DEVS)"
         )
         sys.exit(1)
 
-    if not any(uid in ELZ_AUTHORIZED_IDS for uid in elz_ids):
-        log.critical(
-            "🚫 [ELZ PROTECT] ID ELZ %s tidak ada yang diizinkan! "
-            "Deploy dibatalkan.",
-            elz_ids,
-        )
-        sys.exit(1)
-
-    log.info("✅ [ELZ PROTECT] ID terverifikasi. Bot diizinkan berjalan.")
+    log.info(
+        "✅ [ELZ PROTECT] ID terverifikasi dari config. Bot diizinkan berjalan."
+    )
 # ============================================================
 
 
