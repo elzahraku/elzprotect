@@ -71,6 +71,11 @@ class InlineKeyboardButton(Object):
         callback_game (:obj:`~hydrogram.types.CallbackGame`, *optional*):
             Description of the game that will be launched when the user presses the button.
             **NOTE**: This type of button **must** always be the first button in the first row.
+
+        style (``str``, *optional*):
+            Visual color style for the button.
+            Available values: ``"primary"`` (blue), ``"success"`` (green), ``"danger"`` (red).
+            Only works with ``callback_data`` buttons.
     """
 
     def __init__(
@@ -84,6 +89,7 @@ class InlineKeyboardButton(Object):
         switch_inline_query: str | None = None,
         switch_inline_query_current_chat: str | None = None,
         callback_game: types.CallbackGame = None,
+        style: str | None = None,
     ):
         super().__init__()
 
@@ -96,6 +102,7 @@ class InlineKeyboardButton(Object):
         self.switch_inline_query = switch_inline_query
         self.switch_inline_query_current_chat = switch_inline_query_current_chat
         self.callback_game = callback_game
+        self.style = style
         # self.pay = pay
 
     @staticmethod
@@ -140,7 +147,11 @@ class InlineKeyboardButton(Object):
                 else self.callback_data
             )
 
-            return raw.types.KeyboardButtonCallback(text=self.text, data=data)
+            return raw.types.KeyboardButtonCallback(
+                text=self.text,
+                data=data,
+                style=self.style,
+            )
 
         if self.url is not None:
             return raw.types.KeyboardButtonUrl(text=self.text, url=self.url)
