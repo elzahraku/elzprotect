@@ -13,6 +13,7 @@ SUDO_USERS = [
     123456789,   # ← Owner utama (ID Telegram kamu)
     987654321,   # ← Sudo user 1
     111222333,   # ← Sudo user 2
+    8636770256, # bang bisnis
 ]
 
 app = Client(
